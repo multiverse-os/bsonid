@@ -65,7 +65,7 @@ func NewFromSeed(c interface{}) Output {
 		b[4+i] = machineID[i]
 	}
 
-	structHash := []byte(Hash(c))
+	structHash := Hash(c).Bytes()
 
 	// Pid, 2 bytes, specs don't specify endianness, but we use big endian
 	b[7] = structHash[0]

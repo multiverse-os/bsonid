@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	bsonid "github.com/multiverse-os/levelup/bsonid"
+	id "github.com/multiverse-os/levelup/id"
 )
 
 type TestStruct struct {
@@ -13,11 +13,22 @@ type TestStruct struct {
 }
 
 func main() {
-	fmt.Println("sha3 test")
-	fmt.Println("string 'test' SHA3 [", bsonid.Hash("test"), "]")
-	fmt.Println("struct test struct SHA3 [", bsonid.Hash(TestStruct{Name: "test", X: 1, Y: 4}), "]")
-	fmt.Println("bsonid from seed (test struct) [", bsonid.NewFromSeed(TestStruct{Name: "test", X: 1, Y: 4}), "]")
-	fmt.Println("string 'test' SHA3 [", bsonid.New().String(), "]")
-	fmt.Println("string 'test' SHA3 [", bsonid.New().Bytes(), "]")
-	fmt.Println("string 'test' SHA3 [", bsonid.New().UInt32(), "]")
+	fmt.Println("id library")
+	fmt.Println("==============================================================")
+	fmt.Println("string 'test' Hash(id).String() [", id.Hash("test").String(), "]")
+	fmt.Println("string 'test' Hash(id).Bytes() [", id.Hash("test").Bytes(), "]")
+	fmt.Println("==============================================================")
+	fmt.Println("string 'test' HashAs(Sha3, id).String() [", id.HashAs(id.SHA3, "test").String(), "]")
+	fmt.Println("string 'test' HashAs(Sha3, id).Bytes() [", id.HashAs(id.SHA3, "test").Bytes(), "]")
+	fmt.Println("==============================================================")
+	fmt.Println("struct test struct HashAs(XXHash32, id) [", id.HashAs(id.XXH32, TestStruct{Name: "test", X: 1, Y: 4}), "]")
+	fmt.Println("struct test struct HashAs(SHA3, id) [", id.HashAs(id.XXH32, TestStruct{Name: "test", X: 1, Y: 4}), "]")
+	fmt.Println("==============================================================")
+	fmt.Println("string 'test' Hash(id.New().String()).String() [", id.Hash(id.New().String()).String(), "]")
+	fmt.Println("string 'test' Hash(id.New().Bytes()).Bytes() [", id.Hash(id.New().Bytes()).Bytes(), "]")
+	fmt.Println("==============================================================")
+	fmt.Println("bsonid from seed (test struct) [", id.NewFromSeed(TestStruct{Name: "test", X: 1, Y: 4}), "]")
+	fmt.Println("string 'test' String() [", id.New().String(), "]")
+	fmt.Println("string 'test' Bytes() [", id.New().Bytes(), "]")
+	fmt.Println("string 'test' Uint32 [", id.New().UInt32(), "]")
 }

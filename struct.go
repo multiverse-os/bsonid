@@ -2,29 +2,11 @@ package id
 
 import (
 	"bytes"
-	"fmt"
 	"reflect"
 	"sort"
 	"strconv"
 	"strings"
-
-	"golang.org/x/crypto/sha3"
 )
-
-func Hash(c interface{}) string {
-	return fmt.Sprintf("%x", Sha3(c))
-}
-
-func Sha3(c interface{}) string {
-	// A hash needs to be 64 bytes long to have 256-bit collision resistance.
-	h := make([]byte, 64)
-	// Compute a 64-byte hash of buf and put it in h.
-	sha3.ShakeSum256(
-		h,
-		[]byte(fmt.Sprintf("%v", c)),
-	)
-	return fmt.Sprintf("%x", h)
-}
 
 // Dump takes a data structure and returns its byte representation. This can be
 // useful if you need to use your own hashing function or formatter.

@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-type Output struct {
+type Id struct {
 	stringValue    string
 	byteSliceValue []byte
 	uint32Value    uint32
@@ -56,7 +56,7 @@ func generateMachineID() [3]byte {
 // 3 byte Machine ID
 // 2 byte pid
 // 3 byte self increased id.
-func NewFromSeed(c interface{}) Output {
+func NewFromSeed(c interface{}) Id {
 	var b [12]byte
 	// TimeStamp, 4 bytes, big endian.
 	binary.BigEndian.PutUint32(b[:], uint32(time.Now().Unix()))
@@ -79,18 +79,18 @@ func NewFromSeed(c interface{}) Output {
 
 	hw := NewXXHash32()
 	hw.Write(b[:])
-	return Output{
+	return Id{
 		stringValue:    hex.EncodeToString(b[:]),
 		uint32Value:    hw.Sum32(),
 		byteSliceValue: b[:],
 	}
 }
 
-func New() Output {
+func New() Id {
 	var b [12]byte
 	// TimeStamp, 4 bytes, big endian.
 	binary.BigEndian.PutUint32(b[:], uint32(time.Now().Unix()))
-	// Machine, first 3 bytes of md5(hostname)
+	// Machine, first 3 bytes of xxh32(hostname)
 	for i := 0; i < len(machineID); i++ {
 		b[4+i] = machineID[i]
 	}
@@ -107,13 +107,41 @@ func New() Output {
 
 	hw := NewXXHash32()
 	hw.Write(b[:])
-	return Output{
+	return Id{
 		stringValue:    hex.EncodeToString(b[:]),
 		uint32Value:    hw.Sum32(),
 		byteSliceValue: b[:],
 	}
 }
 
-func (self Output) Bytes() []byte  { return self.byteSliceValue }
-func (self Output) UInt32() uint32 { return self.uint32Value }
-func (self Output) String() string { return self.stringValue }
+func NewShort() Id {
+	// TODO: Take out the pid , then nanoId could be take out the machine, then
+	// pico could be take out both
+	var b [8]byte
+	// TimeStamp, 4 bytes, big endian.
+	binary.BigEndian.PutUint32(b[:], uint32(time.Now().Unix()))
+	// Machine, first 3 bytes of xxh32(hostname)
+	for i := 2; i < len(machineID); i++ {
+		b[2+i] = machineID[i]
+	}
+
+	// increment 3 bytes, big Endian
+	i := atomic.AddUint32(&objectIDCounter, 1)
+	b[5] = byte(i >> 16)
+	b[6] = byte(i >> 8)
+	b[7] = byte(i)
+
+	hw := NewXXHash32()
+	hw.Write(b[:])
+	return Id{
+		stringValue:    hex.EncodeToString(b[:]),
+		uint32Value:    hw.Sum32(),
+		byteSliceValue: b[:],
+	}
+}
+
+// TODO: Would be nice to be able to extract the timestamp, and possibly the
+// value used as a seed.
+func (self Id) Bytes() []byte  { return self.byteSliceValue }
+func (self Id) UInt32() uint32 { return self.uint32Value }
+func (self Id) String() string { return self.stringValue }

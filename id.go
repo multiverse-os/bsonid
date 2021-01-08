@@ -1,7 +1,6 @@
-package bsonid
+package id
 
 import (
-	"crypto/md5"
 	"crypto/rand"
 	"encoding/binary"
 	"encoding/hex"
@@ -11,6 +10,12 @@ import (
 	"sync/atomic"
 	"time"
 )
+
+type Output struct {
+	stringValue    string
+	byteSliceValue []byte
+	uint32Value    uint32
+}
 
 var objectIDCounter = getRandomCounter()
 
@@ -38,7 +43,8 @@ func generateMachineID() [3]byte {
 		copy(sum[:], id)
 		return sum
 	}
-	hw := md5.New()
+	// TODO Why md5? Lets use xxhash!
+	hw := NewXXHash32()
 	// append hostname to the running hash
 	hw.Write([]byte(hostname))
 	copy(sum[:], hw.Sum(nil))
@@ -50,7 +56,7 @@ func generateMachineID() [3]byte {
 // 3 byte Machine ID
 // 2 byte pid
 // 3 byte self increased id.
-func NewFromSeed(c interface{}) string {
+func NewFromSeed(c interface{}) Output {
 	var b [12]byte
 	// TimeStamp, 4 bytes, big endian.
 	binary.BigEndian.PutUint32(b[:], uint32(time.Now().Unix()))
@@ -70,10 +76,17 @@ func NewFromSeed(c interface{}) string {
 	b[9] = byte(i >> 16)
 	b[10] = byte(i >> 8)
 	b[11] = byte(i)
-	return hex.EncodeToString(b[:])
+
+	hw := NewXXHash32()
+	hw.Write(b[:])
+	return Output{
+		stringValue:    hex.EncodeToString(b[:]),
+		uint32Value:    hw.Sum32(),
+		byteSliceValue: b[:],
+	}
 }
 
-func New() string {
+func New() Output {
 	var b [12]byte
 	// TimeStamp, 4 bytes, big endian.
 	binary.BigEndian.PutUint32(b[:], uint32(time.Now().Unix()))
@@ -91,5 +104,16 @@ func New() string {
 	b[9] = byte(i >> 16)
 	b[10] = byte(i >> 8)
 	b[11] = byte(i)
-	return hex.EncodeToString(b[:])
+
+	hw := NewXXHash32()
+	hw.Write(b[:])
+	return Output{
+		stringValue:    hex.EncodeToString(b[:]),
+		uint32Value:    hw.Sum32(),
+		byteSliceValue: b[:],
+	}
 }
+
+func (self Output) Bytes() []byte  { return self.byteSliceValue }
+func (self Output) UInt32() uint32 { return self.uint32Value }
+func (self Output) String() string { return self.stringValue }

@@ -1,4 +1,4 @@
-package bsonid
+package id
 
 import (
 	"bytes"

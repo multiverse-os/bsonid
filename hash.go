@@ -31,8 +31,8 @@ func xxh32Hash(c interface{}) Id {
 	xxhash32 := NewXXHash32()
 	h := xxhash32.Sum([]byte(fmt.Sprintf("%v", c)))
 	return Id{
-		stringValue:    fmt.Sprintf("%x", h),
-		byteSliceValue: h,
+		stringValue:    fmt.Sprintf("%x", h[:8]),
+		byteSliceValue: h[:8],
 		uint32Value:    u32(h),
 	}
 
@@ -43,8 +43,8 @@ func sha3Hash(c interface{}) Id {
 	sha3.ShakeSum256(h, []byte(fmt.Sprintf("%v", c)))
 	return Id{
 		stringValue:    fmt.Sprintf("%x", h),
-		byteSliceValue: h,
-		uint32Value:    u32(h),
+		byteSliceValue: h[:12],
+		uint32Value:    u32(h[:12]),
 	}
 
 }
